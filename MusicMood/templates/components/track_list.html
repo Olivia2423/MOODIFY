@@ -1,0 +1,10 @@
+<ul>
+  {% for t in tracks %}
+    <li>
+      <strong>{{ t.title }}</strong> — {{ t.artist_name }}
+      {% if t.preview_url %}
+        <audio controls src="{{ t.preview_url }}"></audio>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="brand"><span class="logo">🎵</span> MusicMood</div>
+  <p class="tagline">Pick your mood, get tracks, and refine with a quick search.</p>
+</section>
+
+<!-- CONTROLS -->
+<section class="panel">
+  <div class="row">
+    <div>
+      <label for="mood">Mood</label>
+      <select id="mood" name="mood"
+              class="select"
+              hx-get="/_recs/"
+              hx-target="#results"
+              hx-trigger="change"
+              hx-include="#mood,#q,#previews_only">
+        {% for m in moods %}
+          <option value="{{ m.key }}"{% if request.GET.mood == m.key %} selected{% elif forloop.first %} selected{% endif %}>
+            {{ m.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label class="checkbox">
+        <input type="checkbox" id="previews_only" name="previews" value="1"
+               hx-get="/_recs/" hx-trigger="change"
+               hx-target="#results" hx-include="#mood,#q,#previews_only">
+        Previews only
+      </label>
+    </div>
+
+    <div>
+      <label for="q">Refine (optional)</label>
+      <input id="q" name="q" class="input" placeholder="e.g., lofi beats"
+             hx-get="/_recs/"
+             hx-trigger="keyup changed delay:300ms"
+             hx-target="#results"
+             hx-include="#mood,#q,#previews_only" />
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+{% if moods %}
+  {% with moods|first as first_mood %}
+    <section id="results"
+             hx-get="/_recs/"
+             hx-vals='{"mood":"{{ first_mood.key }}"}'
+             hx-trigger="load"
+             hx-indicator=".indicator">
+      <!-- Initial loader -->
+      <div class="indicator"></div>
+    </section>
+  {% endwith %}
+{% else %}
+  <section id="results"><p class="muted">No moods found yet. Seed moods and refresh.</p></section>
+{% endif %}
+
+<!-- Optional: AI Companion area (works if /chat/api/ is wired) -->
+<section style="margin-top: 32px">
+  <h4>AI Companion</h4>
+  <div id="chat" class="panel">
+    <div id="chatlog" class="muted"></div>
+    <form id="chatform" onsubmit="return false;" style="display:flex; gap:.6rem; margin-top:.6rem">
+      <input id="msg" class="input" placeholder="Ask for music by mood, genre, tempo..." />
+      <button type="button" id="sendBtn" class="btn">Send</button>
+    </form>
+  </div>
+</section>
+
+<script>
+(function (){
+  const log = document.getElementById('chatlog');
+  const btn = document.getElementById('sendBtn');
+  const input = document.getElementById('msg');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const msg = (input.value || '').trim();
+    if (!msg) return;
+    log.insertAdjacentHTML('beforeend', `<p><b>You:</b> ${msg}</p>`);
+    try {
+      const r = await fetch('/chat/api/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message: msg })
+      });
+      const data = await r.json();
+      log.insertAdjacentHTML('beforeend', `<p><b>AI:</b> ${data.reply || '(no reply)'}</p>`);
+    } catch (err) {
+      log.insertAdjacentHTML('beforeend', `<p style="color:#f66"><b>Error:</b> ${err}</p>`);
+    }
+    input.value = '';
+    log.scrollTop = log.scrollHeight;
+  });
+})();
+</script>
+
+{% endblock %}

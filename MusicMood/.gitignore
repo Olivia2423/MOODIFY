@@ -1,0 +1,15 @@
+@'
+.env
+.env.*
+*.log
+__pycache__/
+*.pyc
+db.sqlite3
+/staticfiles/
+/media/
+/.venv/
+/venv/
+/node_modules/
+/.DS_Store
+*.zip
+'@ | Out-File -Encoding utf8 .gitignore

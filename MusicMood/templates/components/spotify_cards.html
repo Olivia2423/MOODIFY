@@ -1,0 +1,20 @@
+{% if error %}
+  <p class="muted" style="color:#f66;font-weight:600;margin:8px 0 12px">Spotify error: {{ error }}</p>
+{% endif %}
+
+<div class="grid">
+  {% for t in tracks %}
+    <article class="card">
+      {% if t.image %}<img src="{{ t.image }}" alt="{{ t.name }}" class="cover"/>{% endif %}
+      <h3>{{ t.name }}</h3>
+      <p class="muted">{{ t.artists }}</p>
+      {% if t.explicit %}<span class="badge">Explicit</span>{% endif %}
+      {% if t.preview_url %}
+        <audio controls src="{{ t.preview_url }}"></audio>
+      {% endif %}
+      <p style="margin:.5rem 0 0"><a class="btn secondary" href="{{ t.url }}" target="_blank" rel="noreferrer">Open in Spotify</a></p>
+    </article>
+  {% empty %}
+    {% if not error %}<p class="muted">No tracks yet—try a different mood or use the refine box.</p>{% endif %}
+  {% endfor %}
+</div>
